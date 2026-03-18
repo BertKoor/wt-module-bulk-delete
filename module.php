@@ -37,7 +37,7 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function description(): string
     {
-        return 'This module can delete many objects. Use with caution, at your own risk.';
+        return 'This module can delete many objects. Got a backup? Use with caution at your own risk. ';
     }
 
     public function customModuleVersion(): string
