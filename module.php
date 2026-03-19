@@ -118,6 +118,12 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
         return '<s>' . $record->xref() . ': ' . $record->fullName() . '</s>';
     }
 
+    /**
+     * Copied from app/Http/RequestHandlers/DeleteRecord.php
+     * @param GedcomRecord $record
+     * @param array $params
+     * @return void
+     */
     public function updateRecord(GedcomRecord $record, array $params): void
     {
         if (!$record->canEdit()) {
@@ -137,15 +143,25 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
                     ) {
                         // Delete the family
                         /* I18N: %s is the name of a family group, e.g. “Husband name + Wife name” */
-                        $linker->deleteRecord();
                         error_log(I18N::translate('The family “%s” has been deleted because it only has one member.', $linker->fullName()));
+                        $linker->deleteRecord();
                         // Delete the remaining link to this family
-                        $relict = Registry::gedcomRecordFactory()->make($match[2][0], $tree);
+                        $relict = Registry::gedcomRecordFactory()->make($match[2][0], $record->tree());
                         if ($relict instanceof Individual) {
                             $relict_gedcom = $this->removeLinks($relict->gedcom(), $linker->xref());
                             $relict->updateRecord($relict_gedcom, false);
+                            /* I18N: %s are names of records, such as sources, repositories or individuals */
                             error_log(I18N::translate('The link from “%1$s” to “%2$s” has been deleted.', sprintf('<a href="%1$s" class="alert-link">%2$s</a>', e($relict->url()), $relict->fullName()), $linker->fullName()));
                         }
+                    } else if (
+                        // If we have removed the last member from a family
+                        $linker instanceof Family &&
+                        preg_match_all('/\n1 (HUSB|WIFE|CHIL) @(' . Gedcom::REGEX_XREF . ')@/', $new_gedcom, $match) === 0
+                    ) {
+                        // Delete the family
+                        /* I18N: %s is the name of a family group, e.g. “Husband name + Wife name” */
+                        error_log(I18N::translate('The family “%s” has been deleted because the last member has been deleted.', $linker->fullName()));
+                        $linker->deleteRecord();
                     } else {
                         // Remove links from $linker to $record
                         /* I18N: %s are names of records, such as sources, repositories or individuals */
