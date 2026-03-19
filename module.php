@@ -76,7 +76,7 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
 
     protected function sourcesToFix(Tree $tree, array &$params): ?Collection
     {
-        $result = $this->individualsToFixQuery($tree, [])
+        $result = $this->sourcesToFixQuery($tree, [])
             ->whereIn('s_id', $this->xrefsToFix($params))
             ->pluck('s_id');
         return $result;
