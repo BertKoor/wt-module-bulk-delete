@@ -25,9 +25,10 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
     use ModuleCustomTrait;
     use ModuleDataFixTrait;
 
-    public function __construct(
-        private readonly LinkedRecordService $linked_record_service,
-    ) {
+    private LinkedRecordService $linked_record_service;
+
+    public function __construct() {
+        $this->linked_record_service = new LinkedRecordService();
     }
 
     public function title(): string
@@ -188,4 +189,4 @@ class BulkDeleteModule extends AbstractModule implements ModuleCustomInterface, 
 
 }
 
-return new BulkDeleteModule(new LinkedRecordService);
+return new BulkDeleteModule();
